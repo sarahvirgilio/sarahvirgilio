@@ -1,8 +1,184 @@
-<!DOCTYPE html>
-<html>
-  <body>
-    <h1>Sarah Virgilio</h1>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Presence</title>
 
+  <style>
+    :root{
+      --bg:#08110e;
+      --fg:#dbd9d1;
+      --dim: rgba(219,217,209,0.78);
+      --faint: rgba(219,217,209,0.58);
+      --line: rgba(219,217,209,0.32);
+    }
 
-  </body>
+    html,body{
+      width:100%;
+      height:100%;
+      margin:0;
+      background:var(--bg);
+      color:var(--fg);
+      overflow:hidden;
+      font-family:
+        "Aktiv Grotesk",
+        AktivGrotesk,
+        "Aktiv Grotesk W01",
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Helvetica,
+        Arial,
+        sans-serif;
+      letter-spacing:0.01em;
+    }
+
+    .frame{
+      position:relative;
+      width:100%;
+      height:100%;
+      padding:40px 52px;
+      box-sizing:border-box;
+      opacity:0;
+      transition:opacity 1200ms ease;
+      background:var(--bg);
+    }
+    .frame.show{ opacity:1; }
+
+    .hdr{
+      position:absolute;
+      top:30px;
+      font-size:14px;
+      letter-spacing:0.10em;
+      color:var(--dim);
+      text-transform:uppercase;
+      user-select:none;
+      opacity:0;
+      transition:opacity 900ms ease;
+    }
+    #user{ left:40px; }
+    #clock{ right:40px; opacity:1; }
+
+    .centerWrap{
+      position:absolute;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:150px 80px 120px 80px;
+      box-sizing:border-box;
+      text-align:center;
+    }
+
+    #centerText{
+      max-width:980px;
+      font-size:22px;
+      line-height:1.45;
+      white-space:pre-line;
+      user-select:none;
+    }
+
+    /* Spinner */
+    #spinnerWrap{
+      position:absolute;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      opacity:0;
+      transition:opacity 900ms ease;
+      pointer-events:none;
+    }
+    #spinnerWrap.show{
+      display:flex;
+      opacity:1;
+    }
+
+    .spinner{
+      width:42px;
+      height:42px;
+      border-radius:50%;
+      border:4px dotted rgba(219,217,209,0.72);
+      animation:spin 6s linear infinite;
+    }
+
+    @keyframes spin{
+      from{ transform:rotate(0deg); }
+      to{ transform:rotate(360deg); }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="frame" id="frame">
+    <div class="hdr" id="user">USER 000</div>
+    <div class="hdr" id="clock">00:00:00</div>
+
+    <div class="centerWrap" id="centerWrap">
+      <div id="centerText"></div>
+    </div>
+
+    <div id="spinnerWrap">
+      <div class="spinner"></div>
+    </div>
+  </div>
+
+  <script>
+    function pad(n){
+      return String(n).padStart(3,'0');
+    }
+
+    function updateClock(){
+      const d=new Date();
+      document.getElementById('clock').textContent =
+        pad(d.getHours()) + ':' +
+        pad(d.getMinutes()) + ':' +
+        pad(d.getSeconds());
+    }
+    setInterval(updateClock,250);
+    updateClock();
+
+    // Persistent USER counter
+    let count = parseInt(
+      localStorage.getItem('presence_user_count') || '0',
+      10
+    );
+    count += 1;
+    localStorage.setItem('presence_user_count', count);
+
+    const userHdr = document.getElementById('user');
+    userHdr.textContent = 'USER ' + pad(count);
+
+    const frame = document.getElementById('frame');
+    const spinnerWrap = document.getElementById('spinnerWrap');
+    const centerWrap = document.getElementById('centerWrap');
+    const centerText = document.getElementById('centerText');
+
+    // Boot sequence
+    setTimeout(()=>{
+      frame.classList.add('show');
+    },700);
+
+    setTimeout(()=>{
+      spinnerWrap.style.display='flex';
+      requestAnimationFrame(()=>{
+        spinnerWrap.classList.add('show');
+      });
+    },2600);
+
+    setTimeout(()=>{
+      spinnerWrap.classList.remove('show');
+      setTimeout(()=>{
+        spinnerWrap.style.display='none';
+        centerWrap.style.display='flex';
+        centerText.textContent='PRESENCE DETECTED';
+      },950);
+    },6200);
+
+    setTimeout(()=>{
+      userHdr.style.opacity = 1;
+    },9000);
+  </script>
+</body>
 </html>
